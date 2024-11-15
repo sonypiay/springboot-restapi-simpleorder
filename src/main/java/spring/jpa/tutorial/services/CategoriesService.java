@@ -61,4 +61,24 @@ public class CategoriesService {
                 .map(this::toResponse)
                 .toList();
     }
+
+    @Transactional
+    public CategoriesResponse update(CategoriesRequest request) {
+        validationRequest.validate(request);
+
+        Categories categories = categoriesRepository.findById(request.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Kategori tidak ditemukan"));
+
+        if(categoriesRepository.existsByNameWithid(request.getName(), categories.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nama kategori sudah terdaftar");
+        }
+
+        categories.setName(request.getName());
+        categories.setDescription(request.getDescription());
+        categories.setPublish(request.isPublish());
+        categories.setUpdatedAt(new Date());
+        categoriesRepository.save(categories);
+
+        return toResponse(categories);
+    }
 }

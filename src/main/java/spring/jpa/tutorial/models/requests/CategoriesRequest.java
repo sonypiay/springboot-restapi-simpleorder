@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CategoriesRequest {
 
+    private Integer id;
+
     @NotBlank(message = "nama wajib diisi")
     @Size(max = 100)
     private String name;
@@ -20,4 +22,8 @@ public class CategoriesRequest {
     private String description;
 
     private boolean publish;
+
+    private Integer page;
+
+    private Integer size;
 }

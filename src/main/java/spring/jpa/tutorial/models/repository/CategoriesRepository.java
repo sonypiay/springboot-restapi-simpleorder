@@ -11,4 +11,7 @@ public interface CategoriesRepository extends JpaRepository<Categories, Integer>
 
     @Query("select exists(select 1 from categories as c where c.name = :name)")
     Boolean existsByName(@Param("name") String name);
+
+    @Query("select exists(select 1 from categories as c where c.name = ?1 AND c.id != ?2)")
+    Boolean existsByNameWithid(String name, Integer id);
 }
