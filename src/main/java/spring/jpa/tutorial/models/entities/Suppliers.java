@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "Suppliers")
+@Entity(name = "suppliers")
 @Table(
         name = "suppliers",
         uniqueConstraints = {
@@ -46,5 +46,5 @@ public class Suppliers {
     private List<Products> products;
 
     @OneToMany(mappedBy = "suppliers")
-    private SuppliersAddress suppliersAddress;
+    private List<SuppliersAddress> suppliersAddresses;
 }

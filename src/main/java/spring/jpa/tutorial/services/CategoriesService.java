@@ -3,6 +3,7 @@ package spring.jpa.tutorial.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import spring.jpa.tutorial.models.entities.Categories;
 import spring.jpa.tutorial.models.repository.CategoriesRepository;
@@ -22,6 +23,18 @@ public class CategoriesService {
     @Autowired
     private ValidationRequest validationRequest;
 
+    private CategoriesResponse toResponse(Categories categories) {
+        return CategoriesResponse.builder()
+                .id(categories.getId())
+                .name(categories.getName())
+                .description(categories.getDescription())
+                .publish(categories.isPublish())
+                .createdAt(categories.getCreatedAt())
+                .updatedAt(categories.getUpdatedAt())
+                .build();
+    }
+
+    @Transactional
     public CategoriesResponse create(CategoriesRequest request) {
         validationRequest.validate(request);
 
@@ -37,12 +50,15 @@ public class CategoriesService {
         categories.setUpdatedAt(new Date());
 
         categoriesRepository.save(categories);
+        return toResponse(categories);
+    }
 
-        return CategoriesResponse.builder()
-                .name(categories.getName())
-                .description(categories.getDescription())
-                .publish(categories.isPublish())
-                .createdAt(categories.getCreatedAt())
-                .build();
+    @Transactional(readOnly = true)
+    public List<CategoriesResponse> list() {
+        List<Categories> categories = categoriesRepository.findAll();
+
+        return categories.stream()
+                .map(this::toResponse)
+                .toList();
     }
 }

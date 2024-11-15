@@ -10,5 +10,5 @@ import spring.jpa.tutorial.models.entities.Categories;
 public interface CategoriesRepository extends JpaRepository<Categories, Integer> {
 
     @Query("select exists(select 1 from categories as c where c.name = :name)")
-    boolean existsByName(@Param("name") String name);
+    Boolean existsByName(@Param("name") String name);
 }
