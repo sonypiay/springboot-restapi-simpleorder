@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WebResponse<T> {
+public class ResponseSuccess<T> {
     public T data;
-
-    private PagingResponse paging;
+    public String message;
+    public Integer totalData = 0;
 }

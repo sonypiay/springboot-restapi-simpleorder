@@ -23,10 +23,9 @@ public class HandlerException {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<WebErrorResponse> apiException(ResponseStatusException exception) {
         return ResponseEntity.status(exception.getStatusCode())
-                .body(
-                        WebErrorResponse.<String>builder()
-                                .errors(exception.getReason())
-                                .build()
+                .body(WebErrorResponse.<String>builder()
+                        .errors(exception.getReason())
+                        .build()
                 );
     }
 }

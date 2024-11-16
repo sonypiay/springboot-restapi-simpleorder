@@ -1,19 +1,18 @@
 package spring.jpa.tutorial.utils;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class PagingResponse {
-
-    private Integer currentPage;
-
-    private Integer totalPage;
-
-    private Integer size;
+public class ResponseSuccessWithPaging<T> {
+    public T data;
+    public String message;
+    public Integer totalData = 0;
+    private Pagination paging;
 }
