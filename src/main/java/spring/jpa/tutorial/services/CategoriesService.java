@@ -2,18 +2,21 @@ package spring.jpa.tutorial.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+import jakarta.persistence.criteria.Predicate;
+import spring.jpa.tutorial.exceptions.BadRequestException;
+import spring.jpa.tutorial.exceptions.NotFoundException;
 import spring.jpa.tutorial.models.entities.Categories;
 import spring.jpa.tutorial.models.repository.CategoriesRepository;
 import spring.jpa.tutorial.models.requests.CreateCategoriesRequest;
+import spring.jpa.tutorial.models.requests.SearchCategoriesRequest;
 import spring.jpa.tutorial.models.requests.UpdateCategoriesRequest;
 import spring.jpa.tutorial.models.responses.CategoriesResponse;
 import spring.jpa.tutorial.utils.Pagination;
 import spring.jpa.tutorial.utils.ValidationRequest;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -40,10 +43,8 @@ public class CategoriesService {
 
     @Transactional
     public CategoriesResponse create(CreateCategoriesRequest request) {
-        validationRequest.validate(request);
-
         if(categoriesRepository.existsByName(request.getName())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nama kategori sudah terdaftar");
+            throw new BadRequestException("Nama kategori sudah terdaftar");
         }
 
         Categories categories = new Categories();
@@ -58,13 +59,23 @@ public class CategoriesService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CategoriesResponse> list(Pagination pagination, String sortType, String sortBy) {
+    public Page<CategoriesResponse> list(SearchCategoriesRequest searchCategoriesRequest, Pagination pagination, String sortType, String sortBy) {
         Sort sort = sortType.equals("asc")
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pagination.getCurrentPage(), pagination.getSize(), sort);
-        Page<Categories> categories = categoriesRepository.findAll(pageable);
+        Page<Categories> categories = categoriesRepository.findAll((root, query, builder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if(Objects.nonNull(searchCategoriesRequest.getName())) {
+                predicates.add(builder.like( root.get("name"), "%" + searchCategoriesRequest.getName() + "%" ));
+            }
+
+            return query.where(
+                    predicates.toArray(new jakarta.persistence.criteria.Predicate[]{})
+            ).getRestriction();
+        } , pageable);
         List<CategoriesResponse> responses = categories
                 .getContent()
                 .stream()
@@ -76,13 +87,11 @@ public class CategoriesService {
 
     @Transactional
     public CategoriesResponse update(UpdateCategoriesRequest request) {
-        validationRequest.validate(request);
-
         Categories categories = categoriesRepository.findById(request.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Kategori tidak ditemukan"));
+                .orElseThrow(() -> new NotFoundException("Kategori tidak ditemukan"));
 
         if(categoriesRepository.existsByNameWithid(request.getName(), categories.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nama kategori sudah terdaftar");
+            throw new BadRequestException("Nama kategori sudah terdaftar");
         }
 
         categories.setName(request.getName());
@@ -97,14 +106,14 @@ public class CategoriesService {
     @Transactional(readOnly = true)
     public CategoriesResponse getById(Integer id) {
         Categories categories = categoriesRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Kategori tidak ditemukan"));
+                .orElseThrow(() -> new NotFoundException("Kategori tidak ditemukan"));
 
         return toResponse(categories);
     }
 
     @Transactional
     public void delete(Integer id) {
-        if( ! categoriesRepository.existsById(id) ) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Kategori tidak ditemukan");
+        if( ! categoriesRepository.existsById(id) ) throw new NotFoundException("Kategori tidak ditemukan");
         categoriesRepository.deleteById(id);
     }
 }

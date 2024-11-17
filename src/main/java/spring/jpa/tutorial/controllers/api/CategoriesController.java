@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import spring.jpa.tutorial.models.requests.CreateCategoriesRequest;
+import spring.jpa.tutorial.models.requests.SearchCategoriesRequest;
 import spring.jpa.tutorial.models.requests.UpdateCategoriesRequest;
 import spring.jpa.tutorial.models.responses.CategoriesResponse;
 import spring.jpa.tutorial.services.CategoriesService;
@@ -41,6 +42,8 @@ public class CategoriesController {
     @GetMapping("/api/categories")
     public ResponseEntity<ResponseSuccessWithPaging<List<CategoriesResponse>>> list(
             @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "publish", required = false) boolean publish,
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "5") Integer size,
             @RequestParam(value = "sort_type", required = false, defaultValue = "asc") String sortType,
@@ -50,7 +53,12 @@ public class CategoriesController {
         pagination.setCurrentPage(page);
         pagination.setSize(size);
 
-        Page<CategoriesResponse> data = categoriesService.list(pagination, sortType, sortBy);
+        SearchCategoriesRequest searchCategoriesRequest = new SearchCategoriesRequest();
+        searchCategoriesRequest.setName(name);
+        searchCategoriesRequest.setDescription(description);
+        searchCategoriesRequest.setPublish(publish);
+
+        Page<CategoriesResponse> data = categoriesService.list(searchCategoriesRequest, pagination, sortType, sortBy);
 
         return ResponseEntity.ok(
                 ResponseSuccessWithPaging.<List<CategoriesResponse>>builder()

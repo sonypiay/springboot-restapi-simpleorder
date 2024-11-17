@@ -15,16 +15,12 @@ import lombok.NoArgsConstructor;
 public class UpdateCategoriesRequest {
     private Integer id;
 
-    @NotBlank(message = "nama wajib diisi")
-    @NotNull(message = "name parameter must be required")
+    @NotBlank(message = "name parameter must be required")
     @Size(max = 100)
     private String name;
 
     private String description;
 
+    @NotNull(message = "publish parameter must be required")
     private boolean publish;
-
-    private Integer page;
-
-    private Integer size;
 }
